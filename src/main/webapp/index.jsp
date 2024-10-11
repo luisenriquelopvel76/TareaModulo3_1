@@ -2,11 +2,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>JSP - Hello World</title>
+    <title>Inicio Del Juego</title>
 </head>
 <body>
-<h1><%= "Hello World!" %></h1>
-<br/>
-<a href="hello-servlet">Hello Servlet</a>
+<h2>Bienvenido al Juego de Preguntas</h2>
+<form action="JuegoServlet" method="get">
+    <label for="nombre">Ingresa tu nombre:</label>
+    <input type="text" id="nombre" name="nombre" required>
+    <input type="hidden" name="nuevoJuego" value="true">
+    <button type="submit">Comenzar Juego</button>
+</form>
 </body>
 </html>

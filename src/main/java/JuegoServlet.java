@@ -1,4 +1,7 @@
-package com.modulo3.tareamodulo3_1;
+import com.modulo3.tareamodulo3_1.Jugador;
+import com.modulo3.tareamodulo3_1.Pregunta;
+import com.modulo3.tareamodulo3_1.Preguntas;
+import com.modulo3.tareamodulo3_1.ProgresoDelJugador;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -8,13 +11,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebServlet(name = "JuegoServlet", value = "/JuegoServlet")
+@WebServlet("/JuegoServlet")
 public class JuegoServlet extends HttpServlet {
-    public JuegoServlet() {
-        super();
-    }
-
-    private final Preguntas preguntas = new Preguntas();
+    private Preguntas preguntas = new Preguntas();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -22,30 +21,35 @@ public class JuegoServlet extends HttpServlet {
         HttpSession session = request.getSession();
         Jugador jugador = (Jugador) session.getAttribute("jugador");
 
-        if (jugador == null) {
+        // manejo la sesión del jugador
+        if (jugador == null || request.getParameter("nuevoJuego") != null) {
+            // Si es un nuevo juego, reinicia el progreso
             String nombre = request.getParameter("nombre");
             if (nombre == null || nombre.isEmpty()) {
-                response.sendRedirect("/index.jsp"); // Redirige al inicio si el nombre no está en la sesión
+                response.sendRedirect("index.jsp");
                 return;
             }
+
+            // crea un nuevo jugador y reinicia el progreso
             jugador = new Jugador(nombre);
-            jugador.setProgreso(ProgresoDelJugador.cargarProgreso(nombre));
+            jugador.setProgreso(0);  // reinicia el progreso a 0 para comenzar de nuevo
             session.setAttribute("jugador", jugador);
         }
 
+        // obtener la pregunta actual
         int progreso = jugador.getProgreso();
         Pregunta preguntaActual = preguntas.obtenerPregunta(progreso);
 
         if (preguntaActual != null) {
             request.setAttribute("pregunta", preguntaActual);
-            request.getRequestDispatcher("/pregunta.jsp").forward(request, response);
+            request.getRequestDispatcher("pregunta.jsp").forward(request, response);
         } else {
-            response.sendRedirect("/final.jsp"); // Redirige a una página final si ya no hay preguntas
+            response.sendRedirect("final.jsp");
         }
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+            throws ServletException, IOException {
 
         HttpSession session = request.getSession();
         Jugador jugador = (Jugador) session.getAttribute("jugador");
@@ -63,10 +67,13 @@ public class JuegoServlet extends HttpServlet {
             int respuestaUsuario = Integer.parseInt(respuestaUsuarioStr);
 
             if (preguntaActual.esCorrecta(respuestaUsuario)) {
-                jugador.avanzar();
-                ProgresoDelJugador.guardarProgreso(jugador);
+                jugador.avanzar();  // continua jugando si la respuesta es correcta
+                ProgresoDelJugador.guardarProgreso(jugador);  // guarda el progreso
             } else {
-                response.sendRedirect("final.jsp");
+                // el jugador falló, ir a la página de finalización
+                request.setAttribute("mensajeFinal", "Has fallado. El juego ha terminado.");
+                request.setAttribute("progreso", jugador.getProgreso());
+                request.getRequestDispatcher("final.jsp").forward(request, response);
                 return;
             }
         }

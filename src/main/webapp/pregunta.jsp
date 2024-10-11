@@ -1,16 +1,22 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: usuario
-  Date: 08/10/2024
-  Time: 10:39 a. m.
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <html>
-  <head>
-    <title>$Title$</title>
-  </head>
-  <body>
-  $END$
-  </body>
+<head>
+    <title>Juego De Preguntas</title>
+</head>
+<body>
+<h2>Pregunta para <c:out value="${sessionScope.jugador.nombre}"/></h2>
+
+<form action="JuegoServlet" method="post">
+  <p><c:out value="${pregunta.texto}"/></p>
+
+
+  <c:forEach var="opcion" items="${pregunta.opciones}" varStatus="status">
+    <input type="radio" name="respuesta" value="${status.index + 1}" required>
+    <label><c:out value="${opcion}"/></label><br>
+  </c:forEach>
+
+  <button type="submit">Enviar</button>
+</form>
+</body>
 </html>
